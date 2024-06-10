@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\LoginUserRequest;
 use App\Models\User;
 use App\Models\Coin;
 use App\Traits\HttpResponses;
@@ -16,13 +18,9 @@ class AuthController extends Controller
 {
     use HttpResponses;
 
-    public function register(Request $request)
+    public function register(StoreUserRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|confirmed',
-        ]);
+        $request->validated();
 
         $user = User::create([
             'name' => $request->name,
@@ -30,21 +28,15 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // $token = $user->createToken('auth_token')->plainTextToken;
-
-        // return response()->json(['token' => $token], 201);
         return $this->success([
             'user' => $user,
             'token' => $user->createToken('API Token of ' . $user->name)->plainTextToken
         ]);
     }
 
-    public function login(Request $request)
+    public function login(LoginUserRequest $request)
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $request->validated();
 
         $user = User::where('email', $request->email)->first();
 
